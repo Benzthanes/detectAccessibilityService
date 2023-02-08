@@ -13,23 +13,24 @@ class CustomDetectOverlayView @JvmOverloads constructor(
 ) : ConstraintLayout(context, attrs, defStyleAttr) {
 
     override fun onFilterTouchEventForSecurity(event: MotionEvent): Boolean {
-        val flag_FLAG_WINDOW_IS_OBSCURED =
-            (event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_OBSCURED
-        val flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED =
-            (event.flags and MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
-        Log.e("FLAG_WINDOW_IS_OBSCURED", flag_FLAG_WINDOW_IS_OBSCURED.toString())
-        Log.e(
-            "FLAG_WINDOW_IS_PARTIALLY_OBSCURED",
-            flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED.toString()
-        )
-        return if ((event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED)
-            == MotionEvent.FLAG_WINDOW_IS_OBSCURED
-            || (event.flags and MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED)
-            == MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
-        ) {
-            /// do something when detected
-            false
-        } else super.onFilterTouchEventForSecurity(event)
+//        val flag_FLAG_WINDOW_IS_OBSCURED =
+//            (event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_OBSCURED
+//        val flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED =
+//            (event.flags and MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
+//        Log.e("FLAG_WINDOW_IS_OBSCURED", flag_FLAG_WINDOW_IS_OBSCURED.toString())
+//        Log.e(
+//            "FLAG_WINDOW_IS_PARTIALLY_OBSCURED",
+//            flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED.toString()
+//        )
+//        return if ((event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED)
+//            == MotionEvent.FLAG_WINDOW_IS_OBSCURED
+//            || (event.flags and MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED)
+//            == MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
+//        ) {
+//            /// do something when detected
+//            false
+//        } else super.onFilterTouchEventForSecurity(event)
+        return super.onFilterTouchEventForSecurity(event)
     }
 
 }

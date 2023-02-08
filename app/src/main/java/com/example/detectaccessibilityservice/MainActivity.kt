@@ -11,7 +11,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 
@@ -28,13 +27,13 @@ class MainActivity : AppCompatActivity() {
         val text = findViewById<TextView>(R.id.text)
 //        text.filterTouchesWhenObscured = true
         text.setOnClickListener {
-            Log.e("clicktext","clicktext")
+            Log.e("clicktext", "clicktext")
         }
 
         val view = findViewById<ConstraintLayout>(R.id.rootView)
-        view.filterTouchesWhenObscured = true
+//        view.filterTouchesWhenObscured = true
         view.setOnClickListener {
-            Log.e("clickroot","clickroot")
+            Log.e("clickroot", "clickroot")
         }
         val accessibilityManager =
             getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
@@ -176,13 +175,37 @@ class MainActivity : AppCompatActivity() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-//    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+    //    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
 //        val isDetect = event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED != 0
 //        val isDetectPartial = event.flags and MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED != 0
 //        Log.e("is detecth FLAG_WINDOW_IS_OBSCURED overlay", "isDetect = $isDetect")
 //        Log.e("is detecth FLAG_WINDOW_IS_PARTIALLY_OBSCURED overlay", "isDetect = $isDetectPartial")
 //        return super.dispatchTouchEvent(event)
 //    }
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        val flag_FLAG_WINDOW_IS_OBSCURED =
+            (event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_OBSCURED
+        val flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED =
+            (event.flags and MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
+        Log.e("FLAG_WINDOW_IS_OBSCURED", flag_FLAG_WINDOW_IS_OBSCURED.toString())
+        Log.e(
+            "FLAG_WINDOW_IS_PARTIALLY_OBSCURED",
+            flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED.toString()
+        )
+        return super.dispatchTouchEvent(event)
+    }
 
+//    override fun onTouchEvent(event: MotionEvent): Boolean {
+//        val flag_FLAG_WINDOW_IS_OBSCURED =
+//            (event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_OBSCURED
+//        val flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED =
+//            (event.flags and MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
+//        Log.e("FLAG_WINDOW_IS_OBSCURED", flag_FLAG_WINDOW_IS_OBSCURED.toString())
+//        Log.e(
+//            "FLAG_WINDOW_IS_PARTIALLY_OBSCURED",
+//            flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED.toString()
+//        )
+//        return super.onTouchEvent(event)
+//    }
 
 }
