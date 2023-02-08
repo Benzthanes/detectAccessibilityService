@@ -14,4 +14,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "detectAccessibilityService"
 include ':app'
-include ':PiracyChecker'
