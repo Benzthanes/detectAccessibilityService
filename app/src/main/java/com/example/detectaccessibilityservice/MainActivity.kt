@@ -1,8 +1,8 @@
 package com.example.detectaccessibilityservice
 
-import android.Manifest.permission.SYSTEM_ALERT_WINDOW
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
@@ -17,57 +17,61 @@ import androidx.constraintlayout.widget.ConstraintLayout
 
 class MainActivity : AppCompatActivity() {
 
+    private val whiteListStore = listOf(
+        InstallerIDtest.GOOGLE_PLAY,
+        InstallerIDtest.GALAXY_APPS,
+        InstallerIDtest.HUAWEI_APP_GALLERY,
+        InstallerIDtest.VIVO_APP_STORE,
+        InstallerIDtest.OPPO_APP_STORE
+    )
+
     override fun onResume() {
         val accessibilityManager =
             getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
         val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
             AccessibilityServiceInfo.FEEDBACK_ALL_MASK
         )
-//        Log.e("-> test APP IS ENABLE ACCESSIBILITY", "////")
-//        if (enabledServices.isEmpty()) {
-//            Log.e("-> Not have APP IS ENABLE ACCESSIBILITY", "////")
-//        }
-//        enabledServices.forEach { enable ->
-//            val packageName = enable.resolveInfo.serviceInfo.packageName
-//            Log.e("test packageName enable", packageName)
-//            Log.e("test ---------------", "-----------------")
-//            verifyInstallerId(
-//                listOf(
-//                    InstallerIDtest.GOOGLE_PLAY,
-//                    InstallerIDtest.GALAXY_APPS
-//                ),
-//                packageName,
-//                "have and enable accessibility"
-//            )
-//        }
+        Log.e("-> test APP IS ENABLE ACCESSIBILITY", "////")
+        if (enabledServices.isEmpty()) {
+            Log.e("-> Not have APP IS ENABLE ACCESSIBILITY", "////")
+        }
+        tvResult?.text = ""
+        enabledServices.forEach { enable ->
+            val packageName = enable.resolveInfo.serviceInfo.packageName
+            val appLabel = getApplicationLabelName(packageName)
+            Log.e("test packageName enable", packageName)
+            Log.e("test ---------------", "-----------------")
+            tvResult?.text = tvResult?.text.toString() + "\n" + packageName + " | " + appLabel + " | " +
+                    verifyInstallerIdReturnString(
+                        whiteListStore,
+                        packageName,
+                        "have and enable accessibility"
+                    ) + " | " +
+                    verifyInstallerId(
+                        whiteListStore,
+                        packageName,
+                        "have and enable accessibility"
+                    )+"\n"
+        }
 
         val pkg = packageManager.getInstalledPackages(0)
         pkg.forEach {
-            if(it.packageName.contains("scb")){
+            if (it.packageName.contains("scb")) {
                 tvResult?.text = tvResult?.text.toString() + "\n" + it.packageName + " | " +
-                verifyInstallerIdReturnString(
-                    listOf(
-                        InstallerIDtest.GOOGLE_PLAY,
-                        InstallerIDtest.GALAXY_APPS
-                    ),
-                    it.packageName,
-                    "all package"
-                ) + " | " +
-                    verifyInstallerId(
-                        listOf(
-                            InstallerIDtest.GOOGLE_PLAY,
-                            InstallerIDtest.GALAXY_APPS
-                        ),
-                        it.packageName,
-                        "all package"
-                    )
+                        verifyInstallerIdReturnString(
+                            whiteListStore,
+                            it.packageName,
+                            "all package"
+                        ) + " | " +
+                        verifyInstallerId(
+                            whiteListStore,
+                            it.packageName,
+                            "all package"
+                        )+"\n"
                 Log.e(
                     "checker", it.packageName + " " +
                             verifyInstallerId(
-                                listOf(
-                                    InstallerIDtest.GOOGLE_PLAY,
-                                    InstallerIDtest.GALAXY_APPS
-                                ),
+                                whiteListStore,
                                 it.packageName,
                                 "all package"
                             )
@@ -79,7 +83,7 @@ class MainActivity : AppCompatActivity() {
 
     var tvResult: TextView? = null
 
-        override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -231,5 +235,43 @@ class MainActivity : AppCompatActivity() {
         }
         return super.dispatchTouchEvent(event)
     }
+
+    // Ref : https://github.com/javiersantos/PiracyChecker
+    fun Context.verifyInstallerId(
+        packageName: String
+    ): Boolean {
+        val installerID = whiteListStore
+        val validInstallers = ArrayList<String>()
+        val installer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            packageManager.getInstallSourceInfo(packageName).installingPackageName
+        } else {
+            packageManager.getInstallerPackageName(packageName)
+        }
+        for (id in installerID) {
+            validInstallers.addAll(id.toIDs())
+        }
+        val isVerifyPass = installer != null && validInstallers.contains(installer)
+
+        return isVerifyPass
+    }
+
+    fun Context.getApplicationLabelName(packageName: String): String {
+        return packageManager.getApplicationLabel(
+            packageManager.getApplicationInfoCompat(
+                packageName,
+                0
+            )
+        ).toString()
+    }
+
+    fun PackageManager.getApplicationInfoCompat(
+        packageName: String,
+        flags: Int = 0
+    ): ApplicationInfo =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            getApplicationInfo(packageName, PackageManager.ApplicationInfoFlags.of(flags.toLong()))
+        } else {
+            @Suppress("DEPRECATION") getApplicationInfo(packageName, flags)
+        }
 
 }

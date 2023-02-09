@@ -6,8 +6,10 @@ enum class InstallerIDtest(private val text: String) {
     GOOGLE_PLAY("com.android.vending|com.google.android.feedback"),
     AMAZON_APP_STORE("com.amazon.venezia"),
     GALAXY_APPS("com.sec.android.app.samsungapps"),
-    HUAWEI_APP_GALLERY("com.huawei.appmarket");
-    
+    HUAWEI_APP_GALLERY("com.huawei.appmarket"),
+    VIVO_APP_STORE("com.vivo.appstore"),
+    OPPO_APP_STORE("com.heytap.market");
+
     /* (non-Javadoc)
      * @see java.lang.Enum#toString()
      */
