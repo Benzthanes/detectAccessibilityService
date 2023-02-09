@@ -44,6 +44,23 @@ class MainActivity : AppCompatActivity() {
         val pkg = packageManager.getInstalledPackages(0)
         pkg.forEach {
             if(it.packageName.contains("scb")){
+                tvResult?.text = tvResult?.text.toString() + "\n" + it.packageName + " | " +
+                verifyInstallerIdReturnString(
+                    listOf(
+                        InstallerIDtest.GOOGLE_PLAY,
+                        InstallerIDtest.GALAXY_APPS
+                    ),
+                    it.packageName,
+                    "all package"
+                ) + " | " +
+                    verifyInstallerId(
+                        listOf(
+                            InstallerIDtest.GOOGLE_PLAY,
+                            InstallerIDtest.GALAXY_APPS
+                        ),
+                        it.packageName,
+                        "all package"
+                    )
                 Log.e(
                     "checker", it.packageName + " " +
                             verifyInstallerId(
@@ -60,12 +77,15 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    var tvResult: TextView? = null
+
+        override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             window.setHideOverlayWindows(true)
         }
+        tvResult = findViewById(R.id.text)
 
 //        val text = findViewById<TextView>(R.id.text)
 //        text.filterTouchesWhenObscured = true
@@ -169,6 +189,31 @@ class MainActivity : AppCompatActivity() {
             ))
         )
         return installer != null && validInstallers.contains(installer)
+    }
+
+    fun Context.verifyInstallerIdReturnString(
+        installerID: List<InstallerIDtest>,
+        packageName: String,
+        tag: String,
+    ): String? {
+        val validInstallers = ArrayList<String>()
+        val installer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            packageManager.getInstallSourceInfo(packageName).installingPackageName
+        } else {
+            packageManager.getInstallerPackageName(packageName)
+        }
+        for (id in installerID) {
+            validInstallers.addAll(id.toIDs())
+        }
+        Log.e(
+            "checkerPackageName from $tag",
+            "PACKAGE NAME :$packageName \n" +
+                    "INSTALLER NAME :" + "$installer \n" +
+                    "IS PASS = " + (installer != null && validInstallers.contains(
+                installer
+            ))
+        )
+        return installer
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
