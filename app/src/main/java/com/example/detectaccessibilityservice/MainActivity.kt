@@ -41,17 +41,18 @@ class MainActivity : AppCompatActivity() {
             val appLabel = getApplicationLabelName(packageName)
             Log.e("test packageName enable", packageName)
             Log.e("test ---------------", "-----------------")
-            tvResult?.text = tvResult?.text.toString() + "\n" + packageName + " | " + appLabel + " | " +
-                    verifyInstallerIdReturnString(
-                        whiteListStore,
-                        packageName,
-                        "have and enable accessibility"
-                    ) + " | " +
-                    verifyInstallerId(
-                        whiteListStore,
-                        packageName,
-                        "have and enable accessibility"
-                    )+"\n"
+            tvResult?.text =
+                tvResult?.text.toString() + "\n" + packageName + " | " + appLabel + " | " +
+                        verifyInstallerIdReturnString(
+                            whiteListStore,
+                            packageName,
+                            "have and enable accessibility"
+                        ) + " | " +
+                        verifyInstallerId(
+                            whiteListStore,
+                            packageName,
+                            "have and enable accessibility"
+                        ) + "\n"
         }
 
         val pkg = packageManager.getInstalledPackages(0)
@@ -67,7 +68,7 @@ class MainActivity : AppCompatActivity() {
                             whiteListStore,
                             it.packageName,
                             "all package"
-                        )+"\n"
+                        ) + "\n"
                 Log.e(
                     "checker", it.packageName + " " +
                             verifyInstallerId(
