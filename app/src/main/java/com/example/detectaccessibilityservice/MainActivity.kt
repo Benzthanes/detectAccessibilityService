@@ -17,6 +17,49 @@ import androidx.constraintlayout.widget.ConstraintLayout
 
 class MainActivity : AppCompatActivity() {
 
+    override fun onResume() {
+        val accessibilityManager =
+            getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+        val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
+            AccessibilityServiceInfo.FEEDBACK_ALL_MASK
+        )
+//        Log.e("-> test APP IS ENABLE ACCESSIBILITY", "////")
+//        if (enabledServices.isEmpty()) {
+//            Log.e("-> Not have APP IS ENABLE ACCESSIBILITY", "////")
+//        }
+//        enabledServices.forEach { enable ->
+//            val packageName = enable.resolveInfo.serviceInfo.packageName
+//            Log.e("test packageName enable", packageName)
+//            Log.e("test ---------------", "-----------------")
+//            verifyInstallerId(
+//                listOf(
+//                    InstallerIDtest.GOOGLE_PLAY,
+//                    InstallerIDtest.GALAXY_APPS
+//                ),
+//                packageName,
+//                "have and enable accessibility"
+//            )
+//        }
+
+        val pkg = packageManager.getInstalledPackages(0)
+        pkg.forEach {
+            if(it.packageName.contains("scb")){
+                Log.e(
+                    "checker", it.packageName + " " +
+                            verifyInstallerId(
+                                listOf(
+                                    InstallerIDtest.GOOGLE_PLAY,
+                                    InstallerIDtest.GALAXY_APPS
+                                ),
+                                it.packageName,
+                                "all package"
+                            )
+                )
+            }
+        }
+        super.onResume()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -24,17 +67,17 @@ class MainActivity : AppCompatActivity() {
             window.setHideOverlayWindows(true)
         }
 
-        val text = findViewById<TextView>(R.id.text)
+//        val text = findViewById<TextView>(R.id.text)
 //        text.filterTouchesWhenObscured = true
-        text.setOnClickListener {
-            Log.e("clicktext", "clicktext")
-        }
+//        text.setOnClickListener {
+//            Log.e("clicktext", "clicktext")
+//        }
 
-        val view = findViewById<ConstraintLayout>(R.id.rootView)
+//        val view = findViewById<ConstraintLayout>(R.id.rootView)
 //        view.filterTouchesWhenObscured = true
-        view.setOnClickListener {
-            Log.e("clickroot", "clickroot")
-        }
+//        view.setOnClickListener {
+//            Log.e("clickroot", "clickroot")
+//        }
         val accessibilityManager =
             getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
         val installedServices = accessibilityManager.installedAccessibilityServiceList
@@ -44,8 +87,8 @@ class MainActivity : AppCompatActivity() {
 
 
         // check all app in device
-        val pkg = packageManager.getInstalledPackages(0)
-        pkg.forEach {
+//        val pkg = packageManager.getInstalledPackages(0)
+//        pkg.forEach {
 //            checkPermissionGrant(it.packageName)
 //            Log.e(
 //                "checker", it.packageName + " " +
@@ -58,7 +101,7 @@ class MainActivity : AppCompatActivity() {
 //                            "all package"
 //                        )
 //            )
-        }
+//        }
 
         // check app has request permission ACCESSIBILITY in device
 //        installedServices.forEach { installed ->
@@ -86,35 +129,21 @@ class MainActivity : AppCompatActivity() {
 //        Log.e("################## test END CHECK HAVE ##################", "")
 
         // check app has request and ENABLE permission ACCESSIBILITY in device
-        enabledServices.forEach { enable ->
-            val packageName = enable.resolveInfo.serviceInfo.packageName
-            Log.e("-> test APP IS ENABLE ACCESSIBILITY", "////")
-            Log.e("test packageName enable", packageName)
-            Log.e("test ---------------", "-----------------")
-            verifyInstallerId(
-                listOf(
-                    InstallerIDtest.GOOGLE_PLAY,
-                    InstallerIDtest.GALAXY_APPS
-                ),
-                packageName,
-                "have and enable accessibility"
-            )
-        }
-        val isOverlay = getAppsWhichHaveOverlaySettingEnabled()
-        Log.e("-> test APP IS isOverlay", isOverlay.toString())
-
-//        piracyChecker {
-//            enableInstallerId(
-//                InstallerID.GOOGLE_PLAY,
-//                InstallerID.AMAZON_APP_STORE,
-//                InstallerID.GALAXY_APPS
+//        enabledServices.forEach { enable ->
+//            val packageName = enable.resolveInfo.serviceInfo.packageName
+//            Log.e("-> test APP IS ENABLE ACCESSIBILITY", "////")
+//            Log.e("test packageName enable", packageName)
+//            Log.e("test ---------------", "-----------------")
+//            verifyInstallerId(
+//                listOf(
+//                    InstallerIDtest.GOOGLE_PLAY,
+//                    InstallerIDtest.GALAXY_APPS
+//                ),
+//                packageName,
+//                "have and enable accessibility"
 //            )
-//            addAppToCheck(app)
-//        }.doNotAllow { piracyCheckerError, pirateApp ->
-//            Log.e("",piracyCheckerError.name)
-//        }.allow {
-//
-//        }.onError { }.start()
+//        }
+
     }
 
     fun Context.verifyInstallerId(
@@ -142,46 +171,6 @@ class MainActivity : AppCompatActivity() {
         return installer != null && validInstallers.contains(installer)
     }
 
-    fun getAppsWhichHaveOverlaySettingEnabled(): ArrayList<String>? {
-        val apps: ArrayList<String> = ArrayList()
-        val pm = packageManager
-        val installedPackages: List<PackageInfo> =
-            pm.getInstalledPackages(PackageManager.GET_PERMISSIONS)
-        for (packageInfo in installedPackages) {
-//            Log.e("-> test APP IS grant SYSTEM_ALERT_WINDOW", packageInfo.packageName)
-            val requestedPermissions: Array<String>? = packageInfo.requestedPermissions
-            if (requestedPermissions != null && requestedPermissions.contains(SYSTEM_ALERT_WINDOW)) {
-                checkPermissionGrant(packageInfo.packageName)
-                val name =
-                    pm.getApplicationLabel(packageInfo.applicationInfo).toString()
-                apps.add(name + " (" + packageInfo.packageName + ")")
-            }
-        }
-        return apps
-    }
-
-    fun checkPermissionGrant(packageName: String): Boolean {
-        Log.e(
-            "//////////",
-            packageName + " is grant SYSTEM_ALERT_WINDOW = " +
-                    (packageManager.checkPermission(
-                        SYSTEM_ALERT_WINDOW,
-                        packageName
-                    ) == PackageManager.PERMISSION_GRANTED).toString()
-        )
-        return packageManager.checkPermission(
-            SYSTEM_ALERT_WINDOW,
-            packageName
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    //    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-//        val isDetect = event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED != 0
-//        val isDetectPartial = event.flags and MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED != 0
-//        Log.e("is detecth FLAG_WINDOW_IS_OBSCURED overlay", "isDetect = $isDetect")
-//        Log.e("is detecth FLAG_WINDOW_IS_PARTIALLY_OBSCURED overlay", "isDetect = $isDetectPartial")
-//        return super.dispatchTouchEvent(event)
-//    }
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         val flag_FLAG_WINDOW_IS_OBSCURED =
             (event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_OBSCURED
@@ -192,20 +181,10 @@ class MainActivity : AppCompatActivity() {
             "FLAG_WINDOW_IS_PARTIALLY_OBSCURED",
             flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED.toString()
         )
+        if (flag_FLAG_WINDOW_IS_OBSCURED || flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED) {
+//            finishAffinity()
+        }
         return super.dispatchTouchEvent(event)
     }
-
-//    override fun onTouchEvent(event: MotionEvent): Boolean {
-//        val flag_FLAG_WINDOW_IS_OBSCURED =
-//            (event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_OBSCURED
-//        val flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED =
-//            (event.flags and MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
-//        Log.e("FLAG_WINDOW_IS_OBSCURED", flag_FLAG_WINDOW_IS_OBSCURED.toString())
-//        Log.e(
-//            "FLAG_WINDOW_IS_PARTIALLY_OBSCURED",
-//            flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED.toString()
-//        )
-//        return super.onTouchEvent(event)
-//    }
 
 }
