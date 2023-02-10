@@ -31,28 +31,32 @@ class MainActivity : AppCompatActivity() {
         val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
             AccessibilityServiceInfo.FEEDBACK_ALL_MASK
         )
+        tvResult?.text = ""
         Log.e("-> test APP IS ENABLE ACCESSIBILITY", "////")
         if (enabledServices.isEmpty()) {
+            tvResult?.text = "NOT APP  ENABLE ACCESSIBILITY"
             Log.e("-> Not have APP IS ENABLE ACCESSIBILITY", "////")
-        }
-        tvResult?.text = ""
-        enabledServices.forEach { enable ->
-            val packageName = enable.resolveInfo.serviceInfo.packageName
-            val appLabel = getApplicationLabelName(packageName)
-            Log.e("test packageName enable", packageName)
-            Log.e("test ---------------", "-----------------")
-            tvResult?.text =
-                tvResult?.text.toString() + "\n" + packageName + " | " + appLabel + " | " +
-                        verifyInstallerIdReturnString(
-                            whiteListStore,
-                            packageName,
-                            "have and enable accessibility"
-                        ) + " | " +
-                        verifyInstallerId(
-                            whiteListStore,
-                            packageName,
-                            "have and enable accessibility"
-                        ) + "\n"
+        } else {
+            tvResult?.text = "APP  ENABLE ACCESSIBILITY"
+            enabledServices.forEach { enable ->
+                val packageName = enable.resolveInfo.serviceInfo.packageName
+                val appLabel = getApplicationLabelName(packageName)
+                Log.e("test packageName enable", packageName)
+                Log.e("test ---------------", "-----------------")
+                tvResult?.text =
+                    tvResult?.text.toString() + "\n" + packageName + " | " + appLabel + " | " +
+                            verifyInstallerIdReturnString(
+                                whiteListStore,
+                                packageName,
+                                "have and enable accessibility"
+                            ) + " | " +
+                            verifyInstallerId(
+                                whiteListStore,
+                                packageName,
+                                "have and enable accessibility"
+                            ) + "\n"
+            }
+            tvResult?.text = tvResult?.text.toString()+"\n"+"-----------------------"+"\n"
         }
 
         val pkg = packageManager.getInstalledPackages(0)
