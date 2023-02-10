@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         val accessibilityManager =
             getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+        val installedServices = accessibilityManager.installedAccessibilityServiceList
         val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
             AccessibilityServiceInfo.FEEDBACK_ALL_MASK
         )
@@ -62,7 +63,8 @@ class MainActivity : AppCompatActivity() {
         val pkg = packageManager.getInstalledPackages(0)
         pkg.forEach {
             if (it.packageName.contains("scb")) {
-                tvResult?.text = tvResult?.text.toString() + "\n" + it.packageName + " | " +
+                val appLabel = getApplicationLabelName(it.packageName)
+                tvResult?.text = tvResult?.text.toString() + "\n" + it.packageName + " | " + appLabel + " | " +
                         verifyInstallerIdReturnString(
                             whiteListStore,
                             it.packageName,
@@ -181,10 +183,14 @@ class MainActivity : AppCompatActivity() {
         tag: String,
     ): Boolean {
         val validInstallers = ArrayList<String>()
-        val installer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            packageManager.getInstallSourceInfo(packageName).installingPackageName
-        } else {
-            packageManager.getInstallerPackageName(packageName)
+        val installer = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                packageManager.getInstallSourceInfo(packageName).installingPackageName
+            } else {
+                packageManager.getInstallerPackageName(packageName)
+            }
+        } catch (e: Exception) {
+            null
         }
         for (id in installerID) {
             validInstallers.addAll(id.toIDs())
@@ -206,10 +212,14 @@ class MainActivity : AppCompatActivity() {
         tag: String,
     ): String? {
         val validInstallers = ArrayList<String>()
-        val installer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            packageManager.getInstallSourceInfo(packageName).installingPackageName
-        } else {
-            packageManager.getInstallerPackageName(packageName)
+        val installer = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                packageManager.getInstallSourceInfo(packageName).installingPackageName
+            } else {
+                packageManager.getInstallerPackageName(packageName)
+            }
+        } catch (e: Exception) {
+            null
         }
         for (id in installerID) {
             validInstallers.addAll(id.toIDs())
@@ -261,12 +271,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun Context.getApplicationLabelName(packageName: String): String {
-        return packageManager.getApplicationLabel(
-            packageManager.getApplicationInfoCompat(
-                packageName,
-                0
-            )
-        ).toString()
+        return try {
+            packageManager.getApplicationLabel(
+                packageManager.getApplicationInfoCompat(
+                    packageName,
+                    0
+                )
+            ).toString()
+        } catch (e: Exception) {
+            "null"
+        }
     }
 
     fun PackageManager.getApplicationInfoCompat(
