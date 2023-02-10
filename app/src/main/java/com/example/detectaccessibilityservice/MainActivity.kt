@@ -22,7 +22,8 @@ class MainActivity : AppCompatActivity() {
         InstallerIDtest.GALAXY_APPS,
         InstallerIDtest.HUAWEI_APP_GALLERY,
         InstallerIDtest.VIVO_APP_STORE,
-        InstallerIDtest.OPPO_APP_STORE
+        InstallerIDtest.OPPO_APP_STORE,
+        InstallerIDtest.XIAOMI_APP_STORE
     )
 
     override fun onResume() {
