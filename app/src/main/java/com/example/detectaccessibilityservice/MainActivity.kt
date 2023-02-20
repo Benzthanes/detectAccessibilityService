@@ -12,7 +12,6 @@ import android.view.MotionEvent
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 
 
 class MainActivity : AppCompatActivity() {
@@ -40,51 +39,60 @@ class MainActivity : AppCompatActivity() {
             Log.e("-> Not have APP IS ENABLE ACCESSIBILITY", "////")
         } else {
             tvResult?.text = "APP  ENABLE ACCESSIBILITY"
-            enabledServices.forEach { enable ->
-                val packageName = enable.resolveInfo.serviceInfo.packageName
+            installedServices.forEach {
+                val packageName = it.resolveInfo.serviceInfo.packageName
                 val appLabel = getApplicationLabelName(packageName)
                 Log.e("test packageName enable", packageName)
                 Log.e("test ---------------", "-----------------")
                 tvResult?.text =
-                    tvResult?.text.toString() + "\n" + packageName + " | " + appLabel + " | " +
-                            verifyInstallerIdReturnString(
-                                whiteListStore,
-                                packageName,
-                                "have and enable accessibility"
-                            ) + " | " +
-                            verifyInstallerId(
-                                whiteListStore,
-                                packageName,
-                                "have and enable accessibility"
-                            ) + "\n"
+                    tvResult?.text.toString() + "\n" +
+                            "PACKAGE NAME =" + packageName + "\n" +
+                            "APP NAME =" + appLabel + "\n" +
+                            "INSTALLER ID = " + verifyInstallerIdReturnString(
+                        whiteListStore,
+                        packageName,
+                        "have and enable accessibility"
+                    ) + "\n" +
+                            "INSTALLER VALIDATE ID= " + verifyInstallerId(
+                        whiteListStore,
+                        packageName,
+                        "have and enable accessibility"
+                    ) + "\n" +
+                            "IS SYSTEM APP = " + checkPreInstalledApp(it.resolveInfo.serviceInfo.applicationInfo) +
+                            "\n"
             }
-            tvResult?.text = tvResult?.text.toString()+"\n"+"-----------------------"+"\n"
+            tvResult?.text = tvResult?.text.toString() + "\n" + "-----------------------" + "\n"
         }
 
         val pkg = packageManager.getInstalledPackages(0)
         pkg.forEach {
-            if (it.packageName.contains("scb")) {
-                val appLabel = getApplicationLabelName(it.packageName)
-                tvResult?.text = tvResult?.text.toString() + "\n" + it.packageName + " | " + appLabel + " | " +
-                        verifyInstallerIdReturnString(
-                            whiteListStore,
-                            it.packageName,
-                            "all package"
-                        ) + " | " +
+//            if (it.packageName.contains("scb")) {
+            val appLabel = getApplicationLabelName(it.packageName)
+            tvResult?.text =
+                tvResult?.text.toString() + "\n" +
+                        "PACKAGE NAME =" + it.packageName + "\n" +
+                        "APP NAME =" + appLabel + "\n" +
+                        "INSTALLER ID = " + verifyInstallerIdReturnString(
+                    whiteListStore,
+                    packageName,
+                    "have and enable accessibility"
+                ) + "\n" +
+                        "INSTALLER VALIDATE ID= " + verifyInstallerId(
+                    whiteListStore,
+                    packageName,
+                    "have and enable accessibility"
+                ) + "\n" +
+                        "IS SYSTEM APP = " + checkPreInstalledApp(it.applicationInfo) +
+                        "\n"
+            Log.e(
+                "checker", it.packageName + " " +
                         verifyInstallerId(
                             whiteListStore,
                             it.packageName,
                             "all package"
-                        ) + "\n"
-                Log.e(
-                    "checker", it.packageName + " " +
-                            verifyInstallerId(
-                                whiteListStore,
-                                it.packageName,
-                                "all package"
-                            )
-                )
-            }
+                        )
+            )
+//            }
         }
         super.onResume()
     }
@@ -117,11 +125,9 @@ class MainActivity : AppCompatActivity() {
             AccessibilityServiceInfo.FEEDBACK_ALL_MASK
         )
 
-
         // check all app in device
 //        val pkg = packageManager.getInstalledPackages(0)
 //        pkg.forEach {
-//            checkPermissionGrant(it.packageName)
 //            Log.e(
 //                "checker", it.packageName + " " +
 //                        verifyInstallerId(
@@ -200,9 +206,7 @@ class MainActivity : AppCompatActivity() {
             "checkerPackageName from $tag",
             "PACKAGE NAME :$packageName \n" +
                     "INSTALLER NAME :" + "$installer \n" +
-                    "IS PASS = " + (installer != null && validInstallers.contains(
-                installer
-            ))
+                    "IS PASS = " + (installer != null && validInstallers.contains(installer))
         )
         return installer != null && validInstallers.contains(installer)
     }
@@ -225,15 +229,22 @@ class MainActivity : AppCompatActivity() {
         for (id in installerID) {
             validInstallers.addAll(id.toIDs())
         }
-        Log.e(
-            "checkerPackageName from $tag",
-            "PACKAGE NAME :$packageName \n" +
-                    "INSTALLER NAME :" + "$installer \n" +
-                    "IS PASS = " + (installer != null && validInstallers.contains(
-                installer
-            ))
-        )
+//        Log.e(
+//            "checkerPackageName from $tag",
+//            "PACKAGE NAME :$packageName \n" +
+//                    "INSTALLER NAME :" + "$installer \n" +
+//                    "IS PASS = " + (installer != null && validInstallers.contains(
+//                installer
+//            ))
+//        )
         return installer
+    }
+
+    fun checkPreInstalledApp(appInfo: ApplicationInfo): Boolean {
+        if (appInfo.flags and ApplicationInfo.FLAG_SYSTEM == ApplicationInfo.FLAG_SYSTEM) {
+            return true
+        }
+        return false
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -248,6 +259,12 @@ class MainActivity : AppCompatActivity() {
         )
         if (flag_FLAG_WINDOW_IS_OBSCURED || flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED) {
 //            finishAffinity()
+        }
+        if (flag_FLAG_WINDOW_IS_OBSCURED) {
+            tvResult?.text = tvResult?.text.toString() + "FLAG_WINDOW_IS_OBSCURED\n"
+        }
+        if (flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED) {
+            tvResult?.text = tvResult?.text.toString() + "FLAG_WINDOW_IS_PARTIALLY_OBSCURED\n"
         }
         return super.dispatchTouchEvent(event)
     }

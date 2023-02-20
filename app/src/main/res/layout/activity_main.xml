@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.example.detectaccessibilityservice.CustomDetectOverlayView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -15,26 +15,38 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/text_version"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="version 0.2"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/text"
-            android:layout_width="wrap_content"
+        <com.example.detectaccessibilityservice.CustomDetectOverlayView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_version" />
+            app:layout_constraintTop_toTopOf="parent">
 
-    </com.example.detectaccessibilityservice.CustomDetectOverlayView>
+            <TextView
+                android:id="@+id/text_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="version 0.3"
+                android:textSize="20sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/text_version" />
+
+        </com.example.detectaccessibilityservice.CustomDetectOverlayView>
+
+    </androidx.core.widget.NestedScrollView>
+
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
