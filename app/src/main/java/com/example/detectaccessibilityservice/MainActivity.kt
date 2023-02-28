@@ -68,9 +68,9 @@ class MainActivity : AppCompatActivity() {
 
         val pkg = packageManager.getInstalledPackages(0)
         pkg.forEach {
-            val packageName = it.applicationInfo.packageName
+            val packageName = it.packageName
             if (packageName.contains("kids")) {
-            val appLabel = getApplicationLabelName(it.applicationInfo.packageName)
+            val appLabel = getApplicationLabelName(packageName)
             tvResult?.text =
                 tvResult?.text.toString() + "\n" +
                         "PACKAGE NAME =" + packageName + "\n" +
