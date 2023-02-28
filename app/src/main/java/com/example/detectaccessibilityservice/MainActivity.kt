@@ -2,11 +2,13 @@ package com.example.detectaccessibilityservice
 
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.MotionEvent
 import android.view.accessibility.AccessibilityManager
@@ -39,7 +41,7 @@ class MainActivity : AppCompatActivity() {
             Log.e("-> Not have APP IS ENABLE ACCESSIBILITY", "////")
         } else {
             tvResult?.text = "APP  ENABLE ACCESSIBILITY"
-            installedServices.forEach {
+            enabledServices.forEach {
                 val packageName = it.resolveInfo.serviceInfo.packageName
                 val appLabel = getApplicationLabelName(packageName)
                 Log.e("test packageName enable", packageName)
@@ -66,11 +68,12 @@ class MainActivity : AppCompatActivity() {
 
         val pkg = packageManager.getInstalledPackages(0)
         pkg.forEach {
-//            if (it.packageName.contains("scb")) {
-            val appLabel = getApplicationLabelName(it.packageName)
+            val packageName = it.applicationInfo.packageName
+            if (packageName.contains("kids")) {
+            val appLabel = getApplicationLabelName(it.applicationInfo.packageName)
             tvResult?.text =
                 tvResult?.text.toString() + "\n" +
-                        "PACKAGE NAME =" + it.packageName + "\n" +
+                        "PACKAGE NAME =" + packageName + "\n" +
                         "APP NAME =" + appLabel + "\n" +
                         "INSTALLER ID = " + verifyInstallerIdReturnString(
                     whiteListStore,
@@ -85,14 +88,14 @@ class MainActivity : AppCompatActivity() {
                         "IS SYSTEM APP = " + checkPreInstalledApp(it.applicationInfo) +
                         "\n"
             Log.e(
-                "checker", it.packageName + " " +
+                "checker", "$packageName " +
                         verifyInstallerId(
                             whiteListStore,
-                            it.packageName,
+                            packageName,
                             "all package"
                         )
             )
-//            }
+            }
         }
         super.onResume()
     }
@@ -124,6 +127,12 @@ class MainActivity : AppCompatActivity() {
         val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
             AccessibilityServiceInfo.FEEDBACK_ALL_MASK
         )
+
+        tvResult?.setOnClickListener {
+            finishAffinity()
+            startActivity(Intent("android.settings.CAST_SETTINGS"))
+//            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
 
         // check all app in device
 //        val pkg = packageManager.getInstalledPackages(0)
