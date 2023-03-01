@@ -25,4 +25,5 @@ lint.xml
 /dist
 *.log
 *.xml
+.xml
 *.pb
