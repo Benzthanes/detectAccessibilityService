@@ -23,3 +23,6 @@ ks.properties
 .project
 lint.xml
 /dist
+*.log
+*.xml
+*.pb
