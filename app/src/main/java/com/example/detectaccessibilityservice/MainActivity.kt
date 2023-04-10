@@ -111,12 +111,12 @@ class MainActivity : AppCompatActivity() {
 
         ).mapNotNull { it.resolveInfo?.serviceInfo }
 
-        val signature = arrayListOf<String?>()
+        val signature = arrayListOf<String>()
         for (i in installedServices) {
             val packageName = i.applicationInfo.packageName
-            verifyInstallerIdReturnString(whiteListStore, packageName, "a")?.let {
+            verifyInstallerIdReturnString(whiteListStore, packageName, "")?.let {
                 getSigningSignaturesFromPackageName(it)?.let { sig ->
-                    signature.add(sha256String((sig[0].toByteArray())))
+                    signature.add(sha256String((sig.first().toByteArray())))
                 }
             }
         }
@@ -225,7 +225,7 @@ class MainActivity : AppCompatActivity() {
         val validInstallers = ArrayList<String>()
         val installer = try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                packageManager.getInstallSourceInfo(packageName).installingPackageName
+                packageManager.getInstallSourceInfo(packageName).initiatingPackageName
             } else {
                 packageManager.getInstallerPackageName(packageName)
             }
@@ -377,45 +377,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun getSigningSignaturesFromPackageName(packageName: String): Array<Signature>? {
         val signatures = with(packageManager) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                getPackageInfo(
-                    packageName,
-                    PackageManager.PackageInfoFlags.of(PackageManager.GET_SIGNING_CERTIFICATES.toLong())
-                ).signingInfo.apkContentsSigners
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 getPackageInfo(
                     packageName,
                     PackageManager.GET_SIGNING_CERTIFICATES
                 ).signingInfo.apkContentsSigners
             } else {
-                getPackageInfo(packageName, PackageManager.GET_SIGNATURES)
-                    .signatures
+                getPackageInfo(
+                    packageName,
+                    PackageManager.GET_SIGNATURES
+                ).signatures
             }
         }
         return signatures
     }
 
-    fun sha256String(source: ByteArray): String? {
-        var hash: ByteArray? = null
-        var hashCode: String? = null // w ww . j a va 2 s.c o m
-        try {
-            val digest: MessageDigest = MessageDigest.getInstance("SHA-256")
-            hash = digest.digest(source)
-        } catch (e: NoSuchAlgorithmException) {
-        }
-        if (hash != null) {
-            val hashBuilder = StringBuilder()
-            for (i in hash.indices) {
-                val hex = Integer.toHexString(hash[i].toInt())
-                if (hex.length == 1) {
-                    hashBuilder.append("0")
-                    hashBuilder.append(hex[hex.length - 1])
-                } else {
-                    hashBuilder.append(hex.substring(hex.length - 2))
-                }
-            }
-            hashCode = hashBuilder.toString()
-        }
-        return hashCode
+    fun sha256String(source: ByteArray): String {
+        val md = MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(source)
+        return digest.fold("") { str, it -> str + "%02x".format(it) }
     }
 }
