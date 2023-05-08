@@ -17,6 +17,7 @@ import android.view.MotionEvent
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -38,87 +39,30 @@ class MainActivity : AppCompatActivity() {
         val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
             AccessibilityServiceInfo.FEEDBACK_ALL_MASK
         )
+        val enabledService2 = getEnabledAccessibilityServiceList()
         tvResult?.text = ""
         Log.e("-> test APP IS ENABLE ACCESSIBILITY", "////")
-        if (enabledServices.isEmpty()) {
+        if (enabledService2.isEmpty()) {
             tvResult?.text = "NOT APP  ENABLE ACCESSIBILITY"
             Log.e("-> Not have APP IS ENABLE ACCESSIBILITY", "////")
         } else {
             tvResult?.text = "APP  ENABLE ACCESSIBILITY"
-            enabledServices.forEach {
-                val packageName = it.resolveInfo.serviceInfo.packageName
+            enabledService2.forEach {
+                val packageName = it.packageName
+                val installerPackage = getInstallerPackageName(packageName)
                 val appLabel = getApplicationLabelName(packageName)
+//                val certificateInstaller = packageManagerProvider.getCertificateInstaller(installerPackage)
+//                val appLabel = getApplicationLabelName(packageName)
                 Log.e("test packageName enable", packageName)
                 Log.e("test ---------------", "-----------------")
                 tvResult?.text =
                     tvResult?.text.toString() + "\n" +
                             "PACKAGE NAME =" + packageName + "\n" +
                             "APP NAME =" + appLabel + "\n" +
-                            "INSTALLER ID = " + verifyInstallerIdReturnString(
-                        whiteListStore,
-                        packageName,
-                        "have and enable accessibility"
-                    ) + "\n" +
-                            "INSTALLER VALIDATE ID= " + verifyInstallerId(
-                        whiteListStore,
-                        packageName,
-                        "have and enable accessibility"
-                    ) + "\n" +
-                            "IS SYSTEM APP = " + checkPreInstalledApp(it.resolveInfo.serviceInfo.applicationInfo) +
-                            "\n"
+                            "INSTALLER ID = " +installerPackage
+                tvResult?.text = tvResult?.text.toString() + "\n" + "-----------------------" + "\n"
             }
-            tvResult?.text = tvResult?.text.toString() + "\n" + "-----------------------" + "\n"
-        }
 
-        val pkg = packageManager.getInstalledPackages(0)
-        pkg.forEach {
-            val packageName = it.packageName
-            if (packageName.contains("lite")) {
-                val appLabel = getApplicationLabelName(packageName)
-                tvResult?.text =
-                    tvResult?.text.toString() + "\n" +
-                            "PACKAGE NAME =" + packageName + "\n" +
-                            "APP NAME =" + appLabel + "\n" +
-                            "INSTALLER ID = " + verifyInstallerIdReturnString(
-                        whiteListStore,
-                        packageName,
-                        "have and enable accessibility"
-                    ) + "\n" +
-                            "INSTALLER VALIDATE ID= " + verifyInstallerId(
-                        whiteListStore,
-                        packageName,
-                        "have and enable accessibility"
-                    ) + "\n" +
-                            "IS SYSTEM APP = " + checkPreInstalledApp(it.applicationInfo) +
-                            "\n"
-                Log.e(
-                    "checker", "$packageName " +
-                            verifyInstallerId(
-                                whiteListStore,
-                                packageName,
-                                "all package"
-                            )
-                )
-            }
-        }
-
-
-        val installedServices = accessibilityManager.installedAccessibilityServiceList.mapNotNull {
-            isAccessibilityServiceEnable(this, it)
-        }
-        val enabledServices2 = accessibilityManager.getEnabledAccessibilityServiceList(
-            AccessibilityServiceInfo.FEEDBACK_ALL_MASK
-
-        ).mapNotNull { it.resolveInfo?.serviceInfo }
-
-        val signature = arrayListOf<String>()
-        for (i in installedServices) {
-            val packageName = i.applicationInfo.packageName
-            verifyInstallerIdReturnString(whiteListStore, packageName, "")?.let {
-                getSigningSignaturesFromPackageName(it)?.let { sig ->
-                    signature.add(sha256String((sig.first().toByteArray())))
-                }
-            }
         }
 
         super.onResume()
@@ -397,4 +341,88 @@ class MainActivity : AppCompatActivity() {
         val digest = md.digest(source)
         return digest.fold("") { str, it -> str + "%02x".format(it) }
     }
+
+
+    fun getEnabledAccessibilityServiceList(): List<ServiceInfo> {
+        val accessibilityManager =
+            getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+        return accessibilityManager
+            .installedAccessibilityServiceList
+            .mapNotNull {
+                getValidSettingEnabledAccessibilityServiceInfo(it)
+            }
+    }
+
+    @VisibleForTesting
+    fun getValidSettingEnabledAccessibilityServiceInfo(
+        service: AccessibilityServiceInfo
+    ): ServiceInfo? {
+        val settingValue = getServiceSettingString()
+        val serviceInfo = service.resolveInfo.serviceInfo
+
+        return settingValue
+            .split(":")
+            .mapNotNull { it.split("/").firstOrNull() }
+            .firstOrNull { it == serviceInfo.packageName }
+            ?.let { serviceInfo }
+    }
+
+    fun getServiceSettingString(): String {
+        return try {
+            if (isAccessibilitySettingEnabled()) {
+                Settings.Secure.getString(
+                    contentResolver,
+                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+                )
+            } else {
+                ""
+            }
+        } catch (e: Settings.SettingNotFoundException) {
+            return ""
+        }
+    }
+
+    fun isAccessibilitySettingEnabled(): Boolean {
+        return try {
+            Settings.Secure.getInt(
+                contentResolver,
+                Settings.Secure.ACCESSIBILITY_ENABLED
+            ) == 1
+        } catch (e: Settings.SettingNotFoundException) {
+            false
+        }
+    }
+
+    @Suppress("NewApi", "DEPRECATION")
+    fun getInstallerPackageName(packageName: String): String? {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                packageManager.getInstallSourceInfo(packageName).initiatingPackageName
+            } else {
+                packageManager.getInstallerPackageName(packageName)
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun getApplicationLabelName(packageName: String): String {
+        return try {
+            val appInfo = getApplicationInfoCompat(packageName)
+            packageManager.getApplicationLabel(appInfo).toString()
+        } catch (e: Exception) {
+            "null"
+        }
+    }
+
+    @Suppress("NewApi", "DEPRECATION")
+    private fun getApplicationInfoCompat(packageName: String): ApplicationInfo =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            packageManager.getApplicationInfo(
+                packageName,
+                PackageManager.ApplicationInfoFlags.of(0)
+            )
+        } else {
+            packageManager.getApplicationInfo(packageName, 0)
+        }
 }
