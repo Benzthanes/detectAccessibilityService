@@ -34,36 +34,27 @@ class MainActivity : AppCompatActivity() {
     )
 
     override fun onResume() {
-        val accessibilityManager =
-            getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
-        val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
-            AccessibilityServiceInfo.FEEDBACK_ALL_MASK
-        )
-        val enabledService2 = getEnabledAccessibilityServiceList()
-        tvResult?.text = ""
-        Log.e("-> test APP IS ENABLE ACCESSIBILITY", "////")
-        if (enabledService2.isEmpty()) {
-            tvResult?.text = "NOT APP  ENABLE ACCESSIBILITY"
-            Log.e("-> Not have APP IS ENABLE ACCESSIBILITY", "////")
-        } else {
-            tvResult?.text = "APP  ENABLE ACCESSIBILITY"
-            enabledService2.forEach {
-                val packageName = it.packageName
-                val installerPackage = getInstallerPackageName(packageName)
-                val appLabel = getApplicationLabelName(packageName)
-//                val certificateInstaller = packageManagerProvider.getCertificateInstaller(installerPackage)
+//        val enabledService2 = getEnabledAccessibilityServiceList()
+//        tvResult?.text = ""
+//        if (enabledService2.isEmpty()) {
+//            tvResult?.text = "NOT APP  ENABLE ACCESSIBILITY"
+//        } else {
+//            tvResult?.text = "APP  ENABLE ACCESSIBILITY"
+//            enabledService2.forEach {
+//                val packageName = it.packageName
+//                val installerPackage = getInstallerPackageName(packageName)
 //                val appLabel = getApplicationLabelName(packageName)
-                Log.e("test packageName enable", packageName)
-                Log.e("test ---------------", "-----------------")
-                tvResult?.text =
-                    tvResult?.text.toString() + "\n" +
-                            "PACKAGE NAME =" + packageName + "\n" +
-                            "APP NAME =" + appLabel + "\n" +
-                            "INSTALLER ID = " +installerPackage
-                tvResult?.text = tvResult?.text.toString() + "\n" + "-----------------------" + "\n"
-            }
-
-        }
+//                val signature = getCertificateInstaller(packageName)
+//                tvResult?.text =
+//                    tvResult?.text.toString() + "\n" +
+//                            "PACKAGE NAME =" + packageName + "\n" +
+//                            "APP NAME =" + appLabel + "\n" +
+//                            "INSTALLER ID = " + installerPackage + "\n" +
+//                            "Signature =" + signature
+//                tvResult?.text = tvResult?.text.toString() + "\n" + "-----------------------" + "\n"
+//            }
+//
+//        }
 
         super.onResume()
     }
@@ -95,12 +86,11 @@ class MainActivity : AppCompatActivity() {
         val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
             AccessibilityServiceInfo.FEEDBACK_ALL_MASK
         )
-
-        tvResult?.setOnClickListener {
-            finishAffinity()
-            startActivity(Intent("android.settings.CAST_SETTINGS"))
+//        tvResult?.setOnClickListener {
+//            finishAffinity()
+//            startActivity(Intent("android.settings.CAST_SETTINGS"))
 //            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-        }
+//        }
 
         // check all app in device
 //        val pkg = packageManager.getInstalledPackages(0)
@@ -225,23 +215,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        val flag_FLAG_WINDOW_IS_OBSCURED =
-            (event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_OBSCURED
-        val flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED =
-            (event.flags and MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
-        Log.e("FLAG_WINDOW_IS_OBSCURED", flag_FLAG_WINDOW_IS_OBSCURED.toString())
-        Log.e(
-            "FLAG_WINDOW_IS_PARTIALLY_OBSCURED",
-            flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED.toString()
-        )
-        if (flag_FLAG_WINDOW_IS_OBSCURED || flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED) {
-//            finishAffinity()
-        }
-        if (flag_FLAG_WINDOW_IS_OBSCURED) {
-            tvResult?.text = tvResult?.text.toString() + "FLAG_WINDOW_IS_OBSCURED\n"
-        }
-        if (flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED) {
-            tvResult?.text = tvResult?.text.toString() + "FLAG_WINDOW_IS_PARTIALLY_OBSCURED\n"
+        try {
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                Log.e("event", event.action.toString())
+                val flag_FLAG_WINDOW_IS_OBSCURED =
+                    (event.flags and MotionEvent.FLAG_WINDOW_IS_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_OBSCURED
+                val flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED =
+                    (event.flags and MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED) == MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
+                Log.e("FLAG_WINDOW_IS_OBSCURED", flag_FLAG_WINDOW_IS_OBSCURED.toString())
+                Log.e(
+                    "FLAG_WINDOW_IS_PARTIALLY_OBSCURED",
+                    flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED.toString()
+                )
+                if (flag_FLAG_WINDOW_IS_OBSCURED) {
+                    tvResult?.text = tvResult?.text.toString() + "FLAG_WINDOW_IS_OBSCURED\n"
+                }
+                if (flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED) {
+                    tvResult?.text =
+                        tvResult?.text.toString() + "FLAG_WINDOW_IS_PARTIALLY_OBSCURED\n"
+                }
+            }
+        } catch (e: Exception) {
         }
         return super.dispatchTouchEvent(event)
     }
@@ -319,24 +313,35 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun getSigningSignaturesFromPackageName(packageName: String): Array<Signature>? {
+    private fun getSigningSignaturesFromPackageName(packageName: String): Array<Signature> {
         val signatures = with(packageManager) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                getPackageInfo(
-                    packageName,
-                    PackageManager.GET_SIGNING_CERTIFICATES
-                ).signingInfo.apkContentsSigners
+                try {
+                    getPackageInfo(
+                        packageName,
+                        PackageManager.GET_SIGNING_CERTIFICATES
+                    ).signingInfo.apkContentsSigners
+                } catch (e: Exception) {
+                    return arrayOf()
+                }
             } else {
-                getPackageInfo(
-                    packageName,
-                    PackageManager.GET_SIGNATURES
-                ).signatures
+                try {
+                    getPackageInfo(
+                        packageName,
+                        PackageManager.GET_SIGNATURES
+                    ).signatures
+                } catch (e: Exception) {
+                    return arrayOf()
+                }
             }
         }
         return signatures
     }
 
-    fun sha256String(source: ByteArray): String {
+    fun sha256String(source: ByteArray?): String {
+        if (source == null || source.isEmpty()) {
+            return ""
+        }
         val md = MessageDigest.getInstance("SHA-256")
         val digest = md.digest(source)
         return digest.fold("") { str, it -> str + "%02x".format(it) }
@@ -397,7 +402,7 @@ class MainActivity : AppCompatActivity() {
     fun getInstallerPackageName(packageName: String): String? {
         return try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                packageManager.getInstallSourceInfo(packageName).initiatingPackageName
+                packageManager.getInstallSourceInfo(packageName).installingPackageName
             } else {
                 packageManager.getInstallerPackageName(packageName)
             }
@@ -425,4 +430,11 @@ class MainActivity : AppCompatActivity() {
         } else {
             packageManager.getApplicationInfo(packageName, 0)
         }
+
+    fun getCertificateInstaller(packageName: String?): List<String> {
+        packageName?.let {
+            val signature = getSigningSignaturesFromPackageName(packageName)
+            return signature.map { sha256String(it.toByteArray()) }
+        } ?: return listOf()
+    }
 }
