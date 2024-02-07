@@ -5,8 +5,9 @@ import java.io.FileWriter
 import java.io.InputStream
 
 fun main() {
+
     val inputStream: InputStream =
-        File("/Users/thanessriamornruttanakul/AndroidStudioProjects/detectAccessibilityService/app/src/main/java/com/example/detectaccessibilityservice/mapping_issue.txt").inputStream()
+        File("/Users/thanessriamornruttanakul/AndroidStudioProjects/detectAccessibilityService/app/src/main/java/com/example/detectaccessibilityservice/mapping_3.75.0.txt").inputStream()
     val lineList = mutableListOf<String>()
 
     inputStream.bufferedReader().forEachLine { lineList.add(it) }
@@ -48,7 +49,7 @@ fun main() {
         println(it)
     }
 
-    FileWriter("/Users/thanessriamornruttanakul/AndroidStudioProjects/detectAccessibilityService/app/src/main/java/com/example/detectaccessibilityservice/output.txt").use {
+    FileWriter("/Users/thanessriamornruttanakul/AndroidStudioProjects/detectAccessibilityService/app/src/main/java/com/example/detectaccessibilityservice/output_3_75_0.txt").use {
         it.write(
             text
         )

@@ -1,26 +1,37 @@
 package com.example.detectaccessibilityservice
 
+//import com.google.android.gms.common.GoogleApiAvailability
+
+import android.Manifest
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.content.Intent
+import android.content.IntentSender.SendIntentException
 import android.content.pm.ApplicationInfo
-import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.content.pm.Signature
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.telephony.SubscriptionManager
+import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.util.Log
 import android.view.MotionEvent
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import com.google.android.gms.auth.api.Auth
+import com.google.android.gms.auth.api.credentials.Credential
+import com.google.android.gms.auth.api.credentials.HintRequest
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.api.GoogleApiClient
+import com.huawei.hms.api.HuaweiApiAvailability
 import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,33 +44,34 @@ class MainActivity : AppCompatActivity() {
         InstallerIDtest.XIAOMI_APP_STORE
     )
 
+
     override fun onResume() {
-//        val enabledService2 = getEnabledAccessibilityServiceList()
-//        tvResult?.text = ""
-//        if (enabledService2.isEmpty()) {
-//            tvResult?.text = "NOT APP  ENABLE ACCESSIBILITY"
-//        } else {
-//            tvResult?.text = "APP  ENABLE ACCESSIBILITY"
-//            enabledService2.forEach {
-//                val packageName = it.packageName
-//                val installerPackage = getInstallerPackageName(packageName)
-//                val appLabel = getApplicationLabelName(packageName)
-//                val signature = getCertificateInstaller(packageName)
-//                tvResult?.text =
-//                    tvResult?.text.toString() + "\n" +
-//                            "PACKAGE NAME =" + packageName + "\n" +
-//                            "APP NAME =" + appLabel + "\n" +
-//                            "INSTALLER ID = " + installerPackage + "\n" +
-//                            "Signature =" + signature
-//                tvResult?.text = tvResult?.text.toString() + "\n" + "-----------------------" + "\n"
-//            }
-//
-//        }
+        val phone = getMyPhoneNumber()
+        Log.e("phone", phone.toString())
+        tvResult?.text = phone.toString()
+//        val packageName = "com.example.detectaccessibilityservice"
+//        tvResult?.text = "Build.BOARD =" + Build.BOARD + "\n" +
+//                "Build.BOOTLOADER =" + Build.BOOTLOADER + "\n" +
+//                "Build.BRAND =" + Build.BRAND + "\n" +
+//                "Build.DEVICE =" + Build.DEVICE + "\n" +
+//                "Build.DISPLAY =" + Build.DISPLAY + "\n" +
+//                "Build.FINGERPRINT =" + Build.FINGERPRINT + "\n" +
+//                "Build.HARDWARE =" + Build.HARDWARE + "\n" +
+//                "Build.HOST =" + Build.HOST + "\n" +
+//                "Build.ID =" + Build.ID + "\n" +
+//                "Build.MANUFACTURER =" + Build.MANUFACTURER + "\n" +
+//                "Build.MODEL =" + Build.MODEL + "\n" +
+//                "Build.PRODUCT =" + Build.PRODUCT + "\n" +
+//                "Build.RADIO =" + Build.RADIO + "\n" +
+//                "Build.SERIAL =" + Build.SERIAL
+        tvResult?.text = tvResult?.text.toString() + "\n" + "-----------------------" + "\n"
+
 
         super.onResume()
     }
 
     var tvResult: TextView? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +80,25 @@ class MainActivity : AppCompatActivity() {
             window.setHideOverlayWindows(true)
         }
         tvResult = findViewById(R.id.text)
+
+//        val mGoogleApiClient = GoogleApiClient.Builder(this)
+//            .addApi(Auth.CREDENTIALS_API)
+//            .build()
+//
+//        val hintRequest = HintRequest.Builder()
+//            .setPhoneNumberIdentifierSupported(true)
+//            .build()
+//
+//        val intent = Auth.CredentialsApi.getHintPickerIntent(mGoogleApiClient, hintRequest)
+//        try {
+//            startIntentSenderForResult(intent.intentSender, 1008, null, 0, 0, 0, null)
+//        } catch (e: SendIntentException) {
+//            Log.e("", "Could not start hint picker Intent", e)
+//        }
+//
+//        if (mGoogleApiClient != null) {
+//            mGoogleApiClient.connect()
+//        }
 
 //        val text = findViewById<TextView>(R.id.text)
 //        text.filterTouchesWhenObscured = true
@@ -149,6 +180,36 @@ class MainActivity : AppCompatActivity() {
 //            )
 //        }
 
+
+    }
+
+    fun getMyPhoneNumber(): String? {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_PHONE_NUMBERS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            // phone
+            val subscriptionManager =
+                getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+            val subsInfoList = subscriptionManager.activeSubscriptionInfoList
+            Log.d("Test", "Current list = $subsInfoList")
+            for (subscriptionInfo in subsInfoList) {
+                val number = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    subscriptionManager.getPhoneNumber(subscriptionInfo.subscriptionId)
+                } else {
+                    subscriptionInfo.number
+                }
+
+                // host + port
+                Log.d("Test", " Number is  $number")
+                var proxyAddress = "host:"+System.getProperty("http.proxyHost");
+                proxyAddress += "port:" + System.getProperty("http.proxyPort");
+                return number + "  "+ proxyAddress
+            }
+            return ""
+        }
+        return ""
     }
 
     fun Context.verifyInstallerId(
@@ -437,4 +498,77 @@ class MainActivity : AppCompatActivity() {
             return signature.map { sha256String(it.toByteArray()) }
         } ?: return listOf()
     }
+
+
+    fun isHMSAvailable(context: Context): Boolean {
+        val hms: HuaweiApiAvailability = HuaweiApiAvailability.getInstance()
+        val isHMS: Int = hms.isHuaweiMobileServicesAvailable(context)
+        return isHMS == com.huawei.hms.api.ConnectionResult.SUCCESS
+    }
+
+    fun isGMSAvailable(context: Context): Boolean {
+        val gms = GoogleApiAvailability.getInstance()
+        val isGMS = gms.isGooglePlayServicesAvailable(context)
+        return isGMS == com.google.android.gms.common.ConnectionResult.SUCCESS
+    }
+
+//    private fun invokeSysIntegrity() {
+//        val nonce = "abc"
+//        val sysIntegrityRequest = SysIntegrityRequest()
+//        sysIntegrityRequest.appId = APP_ID
+//        sysIntegrityRequest.nonce = nonce
+//        sysIntegrityRequest.alg = alg
+//
+//        SafetyDetect.getClient(this)
+//            .sysIntegrity(sysIntegrityRequest)
+//            .addOnSuccessListener { response -> // Indicates communication with the service was successful.
+//                // Use response.getResult() to obtain the result data.
+//                val jwsStr = response.result
+//
+//// Process the result data here.
+//                val jwsSplit = jwsStr.split(".").toTypedArray()
+//                val jwsPayloadStr = jwsSplit[1]
+//                val payloadDetail = String(
+//                    Base64.decode(
+//                        jwsPayloadStr.toByteArray(StandardCharsets.UTF_8),
+//                        Base64.URL_SAFE
+//                    ), StandardCharsets.UTF_8
+//                )
+//                try {
+//                    val jsonObject = JSONObject(payloadDetail)
+//                    val basicIntegrity = jsonObject.getBoolean("basicIntegrity")
+//                    fg_button_sys_integrity_go.setBackgroundResource(if (basicIntegrity) R.drawable.btn_round_green else R.drawable.btn_round_red)
+//                    fg_button_sys_integrity_go.setText(R.string.rerun)
+//                    val isBasicIntegrity = basicIntegrity.toString()
+//                    val basicIntegrityResult = "Basic Integrity: $isBasicIntegrity"
+//                    fg_payloadBasicIntegrity.text = basicIntegrityResult
+//                    if (!basicIntegrity) {
+//                        val advice = "Advice: " + jsonObject.getString("advice")
+//                        fg_payloadAdvice.text = advice
+//                    }
+//                } catch (e: JSONException) {
+//                    val errorMsg = e.message
+//                    Log.e(TAG, errorMsg ?: "unknown error")
+//                }
+//
+//
+//            }
+//            .addOnFailureListener { e -> // There was an error communicating with the service.
+//                val errorMsg: String?
+//                errorMsg = if (e is ApiException) {
+//// An error with the HMS API contains some additional details.
+//                    val apiException = e as ApiException
+//                    SafetyDetectStatusCodes.getStatusCodeString(apiException.statusCode) +
+//                            ": " + apiException.message
+//// You can use the apiException.getStatusCode() method to obtain the status code.
+//                } else {
+//// An unknown type of error has occurred.
+//                    e.message
+//                }
+////                Log.e(TAG, errorMsg)
+////                Toast.makeText(activity?.applicationContext, errorMsg, Toast.LENGTH_SHORT).show()
+////                fg_button_sys_integrity_go.setBackgroundResource(R.drawable.btn_round_yellow)
+////                fg_button_sys_integrity_go.setText(R.string.rerun)
+//            }
+//    }
 }
