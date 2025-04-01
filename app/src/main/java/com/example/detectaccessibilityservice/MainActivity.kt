@@ -1,12 +1,9 @@
 package com.example.detectaccessibilityservice
 
-//import com.google.android.gms.common.GoogleApiAvailability
-
 import android.Manifest
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.content.Intent
-import android.content.IntentSender.SendIntentException
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
@@ -15,21 +12,20 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.telephony.SubscriptionManager
-import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.util.Log
 import android.view.MotionEvent
+import android.view.View
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.google.android.gms.auth.api.Auth
-import com.google.android.gms.auth.api.credentials.Credential
-import com.google.android.gms.auth.api.credentials.HintRequest
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.api.GoogleApiClient
 import com.huawei.hms.api.HuaweiApiAvailability
+import java.net.NetworkInterface
+import java.net.SocketException
+import java.net.URL
 import java.security.MessageDigest
 
 
@@ -71,6 +67,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     var tvResult: TextView? = null
+    var text_version: TextView? = null
+    var view: View? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,6 +78,16 @@ class MainActivity : AppCompatActivity() {
             window.setHideOverlayWindows(true)
         }
         tvResult = findViewById(R.id.text)
+        text_version = findViewById(R.id.text_version)
+
+        text_version?.setOnClickListener {
+            val intent = Intent(this, MainActivity2::class.java)
+            startActivity(intent)
+        }
+        val a = "จุทาเทพ"
+        a.substring(0,1)
+        println(a)
+
 
 //        val mGoogleApiClient = GoogleApiClient.Builder(this)
 //            .addApi(Auth.CREDENTIALS_API)
@@ -179,8 +187,56 @@ class MainActivity : AppCompatActivity() {
 //                "have and enable accessibility"
 //            )
 //        }
+        var localIp = getIpAddress()
+        var publicIp = getPublicIpAddress()
+        println(localIp)
+        println(publicIp)
+    }
 
+    fun getPublicIpAddress(): String? {
+        var ip: String? = null
+        val thread = Thread {
+            try {
+                val url = URL("https://api.ipify.org")
+                val connection = url.openConnection()
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0") // Set a User-Agent to avoid HTTP 403 Forbidden error
+                val inputStream = connection.getInputStream()
+                val s = java.util.Scanner(inputStream, "UTF-8").useDelimiter("\\A")
+                ip = s.next()
+                inputStream.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        thread.start()
+        return ip
+    }
 
+    private fun getIpAddress(): String {
+        var ip = ""
+        try {
+            val enumNetworkInterfaces = NetworkInterface
+                .getNetworkInterfaces()
+            while (enumNetworkInterfaces.hasMoreElements()) {
+                val networkInterface = enumNetworkInterfaces
+                    .nextElement()
+                val enumInetAddress = networkInterface
+                    .inetAddresses
+                while (enumInetAddress.hasMoreElements()) {
+                    val inetAddress = enumInetAddress.nextElement()
+
+                    if (inetAddress.isSiteLocalAddress) {
+                        ip += inetAddress.hostAddress
+                    }
+                }
+            }
+        } catch (e: SocketException) {
+            // TODO Auto-generated catch block
+            e.printStackTrace()
+            ip += "Something Wrong! $e\n"
+        }
+
+        return ip
     }
 
     fun getMyPhoneNumber(): String? {
