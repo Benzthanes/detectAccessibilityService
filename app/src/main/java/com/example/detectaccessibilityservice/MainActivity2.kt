@@ -16,26 +16,26 @@ class MainActivity2 : AppCompatActivity() {
             MyData("เติม", R.drawable.ic_launcher_foreground),
             MyData("ถอน", R.drawable.ic_launcher_foreground),
             MyData("โอน", R.drawable.ic_launcher_foreground),
-            MyData("สแกน", R.drawable.ic_launcher_foreground),
             MyData("xxx", R.drawable.ic_launcher_foreground),
             MyData("สโตร์", R.drawable.ic_launcher_foreground),
             MyData("บัญชี", R.drawable.ic_launcher_foreground),
         )
+        val myData = MyDataBig("สแกน", R.drawable.ic_launcher_foreground, dataList)
 
         // ค้นหา RecyclerView จาก layout XML
         val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
 
         // สร้าง Adapter ด้วยข้อมูล
-        val adapter = MyAdapter(dataList)
+        val adapter = MyParentAdapter(myData)
 
         // ตั้งค่า LayoutManager เป็น GridLayoutManager
         val layoutManager = GridLayoutManager(this, 5)
         layoutManager.spanSizeLookup = object : SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
-                return if (position == 3) {
-                    2
+                return if (position == 0) {
+                    3
                 } else {
-                    1
+                    2
                 }
             }
         }

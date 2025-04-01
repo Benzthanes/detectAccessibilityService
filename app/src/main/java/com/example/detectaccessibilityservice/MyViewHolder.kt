@@ -35,4 +35,4 @@ class MyAdapter(private val dataList: List<MyData>) : RecyclerView.Adapter<MyVie
 }
 
 // ชั้นข้อมูลที่คุณต้องการแสดง
-data class MyData(val text: String, val imageResId: Int)
+data class MyData(val text: String, val imageResId: Int , )
