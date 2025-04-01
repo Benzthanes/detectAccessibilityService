@@ -2,18 +2,20 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:background="@color/hwid_auth_button_color_red"
+    android:layout_margin="4dp"
+    android:orientation="vertical">
 
     <ImageView
         android:id="@+id/item_image_view"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_margin="8dp"/>
+        android:layout_margin="4dp"/>
 
     <TextView
         android:id="@+id/item_text_view"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:layout_margin="8dp"/>
+        android:layout_margin="4dp"/>
 </LinearLayout>
