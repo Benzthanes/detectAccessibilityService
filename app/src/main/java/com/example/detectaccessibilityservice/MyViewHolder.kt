@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import java.util.Collections
 
 class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val textView: TextView = itemView.findViewById(R.id.item_text_view)
@@ -32,7 +33,13 @@ class MyAdapter(private val dataList: List<MyData>) : RecyclerView.Adapter<MyVie
         // จำนวนไอเท็มทั้งหมด
         return dataList.size
     }
+
+    fun moveItem(fromPosition: Int, toPosition: Int) {
+        Collections.swap(dataList, fromPosition, toPosition)
+        notifyItemMoved(fromPosition, toPosition)
+    }
+
 }
 
 // ชั้นข้อมูลที่คุณต้องการแสดง
-data class MyData(val text: String, val imageResId: Int , )
+data class MyData(val text: String, val imageResId: Int)

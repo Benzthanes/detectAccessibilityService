@@ -24,7 +24,5 @@ ks.properties
 lint.xml
 /dist
 *.log
-*.xml
-.xml
 *.pb
 .pb
