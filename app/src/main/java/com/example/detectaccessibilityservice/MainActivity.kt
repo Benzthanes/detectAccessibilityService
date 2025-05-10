@@ -2,6 +2,7 @@ package com.example.detectaccessibilityservice
 
 import android.Manifest
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
@@ -17,7 +18,9 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.accessibility.AccessibilityManager
+import android.widget.Button
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -75,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            window.setHideOverlayWindows(true)
+//            window.setHideOverlayWindows(true)
         }
         tvResult = findViewById(R.id.text)
         text_version = findViewById(R.id.text_version)
@@ -85,8 +88,29 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         val a = "จุทาเทพ"
-        a.substring(0,1)
+        a.substring(0, 1)
         println(a)
+
+        val button: Button = findViewById(R.id.button)
+        val button2: Button = findViewById(R.id.button2)
+        val button3: Button = findViewById(R.id.button3)
+        button.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                changeIcon(".DefaultIcon")
+            }
+
+        }
+        button2.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                changeIcon(".Icon1")
+            }
+        }
+
+        button3.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                changeIcon(".Icon2")
+            }
+        }
 
 
 //        val mGoogleApiClient = GoogleApiClient.Builder(this)
@@ -199,7 +223,10 @@ class MainActivity : AppCompatActivity() {
             try {
                 val url = URL("https://api.ipify.org")
                 val connection = url.openConnection()
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0") // Set a User-Agent to avoid HTTP 403 Forbidden error
+                connection.setRequestProperty(
+                    "User-Agent",
+                    "Mozilla/5.0"
+                ) // Set a User-Agent to avoid HTTP 403 Forbidden error
                 val inputStream = connection.getInputStream()
                 val s = java.util.Scanner(inputStream, "UTF-8").useDelimiter("\\A")
                 ip = s.next()
@@ -259,9 +286,9 @@ class MainActivity : AppCompatActivity() {
 
                 // host + port
                 Log.d("Test", " Number is  $number")
-                var proxyAddress = "host:"+System.getProperty("http.proxyHost");
+                var proxyAddress = "host:" + System.getProperty("http.proxyHost");
                 proxyAddress += "port:" + System.getProperty("http.proxyPort");
-                return number + "  "+ proxyAddress
+                return number + "  " + proxyAddress
             }
             return ""
         }
@@ -289,8 +316,8 @@ class MainActivity : AppCompatActivity() {
         Log.e(
             "checkerPackageName from $tag",
             "PACKAGE NAME :$packageName \n" +
-                    "INSTALLER NAME :" + "$installer \n" +
-                    "IS PASS = " + (installer != null && validInstallers.contains(installer))
+                "INSTALLER NAME :" + "$installer \n" +
+                "IS PASS = " + (installer != null && validInstallers.contains(installer))
         )
         return installer != null && validInstallers.contains(installer)
     }
@@ -566,6 +593,35 @@ class MainActivity : AppCompatActivity() {
         val gms = GoogleApiAvailability.getInstance()
         val isGMS = gms.isGooglePlayServicesAvailable(context)
         return isGMS == com.google.android.gms.common.ConnectionResult.SUCCESS
+    }
+
+    private val sharePref by lazy {
+        getSharedPreferences("setting", MODE_PRIVATE)
+    }
+
+
+    fun changeIcon(name: String) {
+
+        val current = sharePref.getString("current", ".DefaultIcon")
+        if (current == name) {
+            return
+        }
+
+
+        packageManager.setComponentEnabledSetting(
+            ComponentName(this, packageName + name),
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.DONT_KILL_APP
+        )
+
+        packageManager.setComponentEnabledSetting(
+            ComponentName(this, packageName + current),
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP
+        )
+
+        sharePref.edit().putString("current", name).apply()
+
     }
 
 //    private fun invokeSysIntegrity() {

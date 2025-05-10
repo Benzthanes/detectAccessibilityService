@@ -48,23 +48,23 @@ class DragAndDropBigCallback(
         viewHolder.itemView.animate().scaleX(1f).scaleY(1f).duration = 300
     }
 
-//    override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
-//        val clippedDx  = clip(recyclerView.width, viewHolder.itemView.left, viewHolder.itemView.right, dX)
-//        val clippedDy  = clip(recyclerView.height, viewHolder.itemView.top, viewHolder.itemView.bottom, dY)
-//        super.onChildDraw(c, recyclerView, viewHolder, clippedDx, clippedDy, actionState, isCurrentlyActive)
-//    }
-//
-//    private fun clip(size: Int, start: Int, end: Int, delta: Float): Float {
-//        val newStart = start + delta
-//        val newEnd = end + delta
-//
-//        val oobStart = 0 - newStart
-//        val oobEnd = newEnd - size
-//
-//        return when {
-//            oobStart > 0 -> delta + oobStart
-//            oobEnd > 0 -> delta - oobEnd
-//            else -> delta
-//        }
-//    }
+    override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
+        val clippedDx  = clip(recyclerView.width, viewHolder.itemView.left, viewHolder.itemView.right, dX)
+        val clippedDy  = clip(recyclerView.height, viewHolder.itemView.top, viewHolder.itemView.bottom, dY)
+        super.onChildDraw(c, recyclerView, viewHolder, clippedDx, clippedDy, actionState, isCurrentlyActive)
+    }
+
+    private fun clip(size: Int, start: Int, end: Int, delta: Float): Float {
+        val newStart = start + delta
+        val newEnd = end + delta
+
+        val oobStart = 0 - newStart
+        val oobEnd = newEnd - size
+
+        return when {
+            oobStart > 0 -> delta + oobStart
+            oobEnd > 0 -> delta - oobEnd
+            else -> delta
+        }
+    }
 }
