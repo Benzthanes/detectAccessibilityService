@@ -8,17 +8,26 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.content.pm.Signature
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.TextUtils
+import android.text.style.BulletSpan
+import android.text.style.ImageSpan
+import android.text.style.LeadingMarginSpan
 import android.util.Log
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
@@ -61,6 +70,67 @@ class MainActivity : AppCompatActivity() {
 
     var tvResult: TextView? = null
 
+    fun Context.dpToPx(dp: Float): Int {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dp,
+            resources.displayMetrics
+        ).toInt()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    fun formatBulletedListWithGap(context: Context, stringList: List<String>, descriptionText: String, textView: TextView) {
+
+        val gapDp = 8f
+        val gapPx = context.dpToPx(gapDp)
+        val bulletRadius = 10
+
+        // ระยะเยื้องทั้งหมด: (ขนาด Bullet * 2) + ช่องว่าง
+        val bulletIndentPx = (2 * bulletRadius) + gapPx
+
+        val ssb = SpannableStringBuilder()
+
+        for (i in stringList.indices) {
+            val item = stringList[i]
+
+            val startBullet = ssb.length
+            ssb.append(item).append("\n") // แต่ละรายการ bullet จบด้วย \n
+
+            val endBullet = ssb.length - 1 // ไม่รวม \n
+
+            // ใช้งาน BulletSpan
+            ssb.setSpan(
+                BulletSpan(gapPx , Color.GREEN, bulletRadius),
+                startBullet,
+                endBullet,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            // ถ้าเป็นรายการสุดท้าย ให้เพิ่ม Description
+            if (i == stringList.size - 1) {
+
+                // เพิ่มบรรทัดว่าง 1 บรรทัด (ถ้าคุณต้องการ) หรือติดกันเลย
+                // ssb.append("\n")
+
+                // เพิ่มข้อความคำอธิบาย
+                val startDesc = ssb.length
+                ssb.append(descriptionText)
+                val endDesc = ssb.length
+
+                // กำหนด LeadingMarginSpan เพื่อให้คำอธิบายเยื้องเท่ากับข้อความ Bullet
+                ssb.setSpan(
+                    LeadingMarginSpan.Standard(bulletIndentPx, bulletIndentPx),
+                    startDesc,
+                    endDesc,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+        }
+
+        textView.text = ssb
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -68,6 +138,37 @@ class MainActivity : AppCompatActivity() {
             window.setHideOverlayWindows(true)
         }
         tvResult = findViewById(R.id.text)
+//        val message = "กด # เพื่อเพิ่ม favorite ในหน้าหลัก ในหน้าหลักในหน้าหลักในหน้าหลักในหน้าหลัก"
+//        val spannable = SpannableString(message)
+//
+//        val drawable = ContextCompat.getDrawable(this, R.drawable.ic_easy_x_favorite_empty)
+//        drawable?.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+//
+//        val imageSpan = drawable?.let { ImageSpan(it, ImageSpan.ALIGN_BASELINE) }
+//
+//        val index = message.indexOf("#")
+//
+//        if (imageSpan != null) {
+//            spannable.setSpan(imageSpan, index, index+1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
+//        }
+//        tvResult?.text = spannable
+
+        // ข้อมูล
+        val englishItems = listOf(
+            "Savings",
+            "Personal consumption",
+            "Salary",
+            "Loan repayment",
+            "Investment",
+            "Business",
+            "Others"
+        )
+
+        val englishDescription = "To receive income from freelance work, online sales, and digital platforms, and to manage financial transactions related to e-commerce."
+
+
+// เรียกใช้ฟังก์ชันสำหรับแต่ละคอลัมน์
+        formatBulletedListWithGap(this, englishItems, englishDescription, tvResult!!)
 
 //        val text = findViewById<TextView>(R.id.text)
 //        text.filterTouchesWhenObscured = true
@@ -228,11 +329,11 @@ class MainActivity : AppCompatActivity() {
                     flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED.toString()
                 )
                 if (flag_FLAG_WINDOW_IS_OBSCURED) {
-                    tvResult?.text = tvResult?.text.toString() + "FLAG_WINDOW_IS_OBSCURED\n"
+//                    tvResult?.text = tvResult?.text.toString() + "FLAG_WINDOW_IS_OBSCURED\n"
                 }
                 if (flag_FLAG_WINDOW_IS_PARTIALLY_OBSCURED) {
-                    tvResult?.text =
-                        tvResult?.text.toString() + "FLAG_WINDOW_IS_PARTIALLY_OBSCURED\n"
+//                    tvResult?.text =
+//                        tvResult?.text.toString() + "FLAG_WINDOW_IS_PARTIALLY_OBSCURED\n"
                 }
             }
         } catch (e: Exception) {
