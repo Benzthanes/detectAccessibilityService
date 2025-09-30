@@ -85,8 +85,16 @@ class MainActivity : AppCompatActivity() {
         val gapPx = context.dpToPx(gapDp)
         val bulletRadius = 10
 
-        // ระยะเยื้องทั้งหมด: (ขนาด Bullet * 2) + ช่องว่าง
-        val bulletIndentPx = (2 * bulletRadius) + gapPx
+        // 1. คำนวณระยะเยื้องทั้งหมดของ Bullet (Base Indent)
+        val baseIndentPx = (2 * bulletRadius) + gapPx
+
+        // 2. กำหนดระยะเยื้องเพิ่มเติม (Additional Tab/Indent)
+        // ใช้ค่า 16dp เป็นตัวอย่าง
+        val extraIndentDp = 16f
+        val extraIndentPx = context.dpToPx(extraIndentDp)
+
+        // 3. ระยะเยื้องทั้งหมดสำหรับ Description คือ Base Indent + Extra Indent
+        val totalDescriptionIndentPx = baseIndentPx + extraIndentPx
 
         val ssb = SpannableStringBuilder()
 
@@ -94,11 +102,11 @@ class MainActivity : AppCompatActivity() {
             val item = stringList[i]
 
             val startBullet = ssb.length
-            ssb.append(item).append("\n") // แต่ละรายการ bullet จบด้วย \n
+            ssb.append(item).append("\n")
 
-            val endBullet = ssb.length - 1 // ไม่รวม \n
+            val endBullet = ssb.length - 1
 
-            // ใช้งาน BulletSpan
+            // ใช้งาน BulletSpan สำหรับรายการ
             ssb.setSpan(
                 BulletSpan(gapPx , Color.GREEN, bulletRadius),
                 startBullet,
@@ -109,17 +117,17 @@ class MainActivity : AppCompatActivity() {
             // ถ้าเป็นรายการสุดท้าย ให้เพิ่ม Description
             if (i == stringList.size - 1) {
 
-                // เพิ่มบรรทัดว่าง 1 บรรทัด (ถ้าคุณต้องการ) หรือติดกันเลย
-                // ssb.append("\n")
+                // ไม่ต้องเพิ่มบรรทัดว่างเพิ่มเติม ถ้าต้องการให้ติดกัน
 
                 // เพิ่มข้อความคำอธิบาย
                 val startDesc = ssb.length
                 ssb.append(descriptionText)
                 val endDesc = ssb.length
 
-                // กำหนด LeadingMarginSpan เพื่อให้คำอธิบายเยื้องเท่ากับข้อความ Bullet
+                // กำหนด LeadingMarginSpan ด้วยระยะเยื้องใหม่ที่เพิ่ม Extra Indent เข้าไป
                 ssb.setSpan(
-                    LeadingMarginSpan.Standard(bulletIndentPx, bulletIndentPx),
+                    // ใช้ totalDescriptionIndentPx สำหรับทั้งบรรทัดแรกและบรรทัดที่เหลือ
+                    LeadingMarginSpan.Standard(totalDescriptionIndentPx, totalDescriptionIndentPx),
                     startDesc,
                     endDesc,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
